@@ -1,0 +1,927 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard Análise Competitiva - Jeep Renegade vs BYD</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --primary-green: #2ecc71;
+            --competitor-red: #e74c3c;
+            --competitor-blue: #3498db;
+            --bg-light: #f8f9fa;
+            --text-dark: #2c3e50;
+            --text-light: #7f8c8d;
+            --card-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+            --gradient-bg: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: var(--gradient-bg);
+            min-height: 100vh;
+            color: var(--text-dark);
+            line-height: 1.6;
+        }
+
+        .container {
+            max-width: 980px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 40px;
+            background: rgba(255, 255, 255, 0.95);
+            padding: 30px;
+            border-radius: 20px;
+            backdrop-filter: blur(10px);
+            box-shadow: var(--card-shadow);
+        }
+
+        .header h1 {
+            color: var(--text-dark);
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+            background: linear-gradient(45deg, var(--primary-green), var(--competitor-blue));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .header p {
+            color: var(--text-light);
+            font-size: 1.2rem;
+        }
+
+        .tabs {
+            display: flex;
+            justify-content: center;
+            margin-bottom: 30px;
+            background: rgba(255, 255, 255, 0.9);
+            border-radius: 15px;
+            padding: 10px;
+            backdrop-filter: blur(10px);
+            box-shadow: var(--card-shadow);
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+
+        .tab-btn {
+            background: transparent;
+            border: none;
+            padding: 15px 25px;
+            border-radius: 10px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-size: 1rem;
+            font-weight: 600;
+            color: var(--text-dark);
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .tab-btn:hover {
+            background: rgba(46, 204, 113, 0.1);
+            transform: translateY(-2px);
+        }
+
+        .tab-btn.active {
+            background: var(--primary-green);
+            color: white;
+            box-shadow: 0 5px 15px rgba(46, 204, 113, 0.3);
+        }
+
+        .tab-content {
+            display: none;
+            animation: fadeIn 0.5s ease-in-out;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .cards-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 25px;
+            margin-bottom: 30px;
+        }
+
+        .card {
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 20px;
+            padding: 25px;
+            box-shadow: var(--card-shadow);
+            backdrop-filter: blur(10px);
+            transition: all 0.3s ease;
+            border-left: 5px solid var(--primary-green);
+        }
+
+        .card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.15);
+        }
+
+        .card.competitor-1 {
+            border-left-color: var(--competitor-red);
+        }
+
+        .card.competitor-2 {
+            border-left-color: var(--competitor-blue);
+        }
+
+        .card h3 {
+            font-size: 1.4rem;
+            margin-bottom: 15px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .metric {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+
+        .metric-label {
+            font-weight: 600;
+            color: var(--text-dark);
+        }
+
+        .metric-value {
+            font-size: 1.2rem;
+            font-weight: bold;
+            padding: 5px 15px;
+            border-radius: 20px;
+            background: #ecf0f1;
+        }
+
+        .metric-value.excellent { background: #d5f4e6; color: #27ae60; }
+        .metric-value.good { background: #ddeef7; color: #2980b9; }
+        .metric-value.average { background: #fff3cd; color: #f39c12; }
+        .metric-value.poor { background: #f8d7da; color: #e74c3c; }
+
+        .progress-bar {
+            width: 100%;
+            height: 8px;
+            background: #ecf0f1;
+            border-radius: 4px;
+            overflow: hidden;
+            margin-top: 10px;
+        }
+
+        .progress-fill {
+            height: 100%;
+            border-radius: 4px;
+            transition: width 1.5s ease-in-out;
+            animation: progressAnimation 2s ease-in-out;
+        }
+
+        @keyframes progressAnimation {
+            from { width: 0%; }
+        }
+
+        .insights-box {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+            padding: 25px;
+            border-radius: 15px;
+            margin: 25px 0;
+        }
+
+        .insights-box h3 {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 15px;
+        }
+
+        .swot-matrix {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+            margin-top: 20px;
+        }
+
+        .swot-quadrant {
+            padding: 20px;
+            border-radius: 15px;
+            color: white;
+        }
+
+        .swot-quadrant.strengths { background: linear-gradient(135deg, #2ecc71, #27ae60); }
+        .swot-quadrant.weaknesses { background: linear-gradient(135deg, #e74c3c, #c0392b); }
+        .swot-quadrant.opportunities { background: linear-gradient(135deg, #3498db, #2980b9); }
+        .swot-quadrant.threats { background: linear-gradient(135deg, #f39c12, #e67e22); }
+
+        .swot-quadrant h4 {
+            margin-bottom: 15px;
+            font-size: 1.3rem;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .swot-quadrant ul {
+            list-style: none;
+        }
+
+        .swot-quadrant li {
+            margin-bottom: 8px;
+            padding-left: 20px;
+            position: relative;
+        }
+
+        .swot-quadrant li:before {
+            content: "•";
+            position: absolute;
+            left: 0;
+            color: rgba(255, 255, 255, 0.7);
+        }
+
+        .w5-matrix {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 20px;
+            margin-top: 20px;
+        }
+
+        .w5-card {
+            padding: 20px;
+            border-radius: 15px;
+            color: white;
+        }
+
+        .w5-card.what { background: linear-gradient(135deg, #2ecc71, #27ae60); }
+        .w5-card.why { background: linear-gradient(135deg, #e74c3c, #c0392b); }
+        .w5-card.who { background: linear-gradient(135deg, #3498db, #2980b9); }
+        .w5-card.where { background: linear-gradient(135deg, #f39c12, #e67e22); }
+        .w5-card.how { background: linear-gradient(135deg, #9b59b6, #8e44ad); }
+        .w5-card.how-much { background: linear-gradient(135deg, #34495e, #2c3e50); }
+
+        .ad-examples {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 20px;
+            margin-top: 20px;
+        }
+
+        .ad-card {
+            background: white;
+            border-radius: 15px;
+            padding: 20px;
+            box-shadow: var(--card-shadow);
+        }
+
+        .ad-card img {
+            width: 100%;
+            height: 200px;
+            object-fit: cover;
+            border-radius: 10px;
+            margin-bottom: 15px;
+            background: #f8f9fa;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #7f8c8d;
+            font-size: 14px;
+        }
+
+        .complaints-list {
+            background: white;
+            border-radius: 15px;
+            padding: 20px;
+            margin-top: 20px;
+        }
+
+        .complaint-item {
+            padding: 15px;
+            border-left: 4px solid var(--competitor-red);
+            background: #f8f9fa;
+            margin-bottom: 15px;
+            border-radius: 0 10px 10px 0;
+        }
+
+        .complaint-item h5 {
+            color: var(--competitor-red);
+            margin-bottom: 5px;
+        }
+
+        @media (max-width: 768px) {
+            .container { padding: 10px; }
+            .header h1 { font-size: 2rem; }
+            .tabs { padding: 5px; }
+            .tab-btn { padding: 12px 18px; font-size: 0.9rem; }
+            .cards-grid { grid-template-columns: 1fr; }
+            .swot-matrix, .w5-matrix { grid-template-columns: 1fr; }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1><i class="fas fa-chart-line"></i> Análise Competitiva SUV</h1>
+            <p>Jeep Renegade vs BYD - Estratégias para Superar a Concorrência Chinesa</p>
+        </div>
+
+        <div class="tabs">
+            <button class="tab-btn active" onclick="openTab(event, 'ads-analysis')">
+                <i class="fas fa-bullhorn"></i> Análise de Anúncios
+            </button>
+            <button class="tab-btn" onclick="openTab(event, 'complaints-analysis')">
+                <i class="fas fa-exclamation-triangle"></i> Reclame Aqui
+            </button>
+            <button class="tab-btn" onclick="openTab(event, 'swot-analysis')">
+                <i class="fas fa-crosshairs"></i> Análise SWOT
+            </button>
+            <button class="tab-btn" onclick="openTab(event, 'w5-analysis')">
+                <i class="fas fa-question-circle"></i> Análise 5W2H
+            </button>
+        </div>
+
+        <!-- ABA 1: ANÁLISE DE ANÚNCIOS -->
+        <div id="ads-analysis" class="tab-content active">
+            <div class="insights-box">
+                <h3><i class="fas fa-lightbulb"></i> Insights Estratégicos - Publicidade Digital</h3>
+                <p>A BYD domina a narrativa digital focando em <strong>tecnologia e sustentabilidade</strong>, enquanto o Jeep Renegade ainda possui forte apelo de <strong>tradição e robustez</strong>. Oportunidade: combinar a força da marca com inovação tecnológica.</p>
+            </div>
+
+            <div class="cards-grid">
+                <div class="card">
+                    <h3><i class="fas fa-jeep" style="color: var(--primary-green);"></i> Jeep Renegade</h3>
+                    
+                    <div class="metric">
+                        <span class="metric-label">Foco Principal</span>
+                        <span class="metric-value excellent">Aventura & Tradição</span>
+                    </div>
+                    <div class="metric">
+                        <span class="metric-label">Formatos Mais Usados</span>
+                        <span class="metric-value good">Vídeo (65%)</span>
+                    </div>
+                    <div class="progress-bar">
+                        <div class="progress-fill" style="width: 78%; background: var(--primary-green);"></div>
+                    </div>
+                    <p style="margin-top: 10px; font-size: 0.9rem; color: var(--text-light);">Score Geral: 78/100</p>
+                </div>
+
+                <div class="card competitor-1">
+                    <h3><i class="fas fa-car" style="color: var(--competitor-red);"></i> BYD Song Pro</h3>
+                    
+                    <div class="metric">
+                        <span class="metric-label">Foco Principal</span>
+                        <span class="metric-value excellent">Tecnologia & Híbrido</span>
+                    </div>
+                    <div class="metric">
+                        <span class="metric-label">Formatos Mais Usados</span>
+                        <span class="metric-value excellent">Carrossel (58%)</span>
+                    </div>
+                    <div class="progress-bar">
+                        <div class="progress-fill" style="width: 85%; background: var(--competitor-red);"></div>
+                    </div>
+                    <p style="margin-top: 10px; font-size: 0.9rem; color: var(--text-light);">Score Geral: 85/100</p>
+                </div>
+
+                <div class="card competitor-2">
+                    <h3><i class="fas fa-bolt" style="color: var(--competitor-blue);"></i> BYD Dolphin</h3>
+                    
+                    <div class="metric">
+                        <span class="metric-label">Foco Principal</span>
+                        <span class="metric-value excellent">100% Elétrico</span>
+                    </div>
+                    <div class="metric">
+                        <span class="metric-label">Formatos Mais Usados</span>
+                        <span class="metric-value good">Imagem (52%)</span>
+                    </div>
+                    <div class="progress-bar">
+                        <div class="progress-fill" style="width: 82%; background: var(--competitor-blue);"></div>
+                    </div>
+                    <p style="margin-top: 10px; font-size: 0.9rem; color: var(--text-light);">Score Geral: 82/100</p>
+                </div>
+            </div>
+
+            <h3>Exemplos de Anúncios Recentes</h3>
+            <div class="ad-examples">
+                <div class="ad-card">
+                    <div class="img" style="background: #f8f9fa; height: 200px; display: flex; align-items: center; justify-content: center; border-radius: 10px; margin-bottom: 15px; color: #7f8c8d;">
+                        <i class="fas fa-image fa-3x"></i><br>Google Ads - Jeep Renegade
+                    </div>
+                    <h5>Jeep Renegade - Tradição em Cada Aventura</h5>
+                    <p>"Descubra o SUV que conquistou 500 mil brasileiros. Motor 1.3 Turbo, 4x4 e preços a partir de R$ 115.990"</p>
+                    <small>Segmentação: Homens 25-45, renda familiar >R$ 5k</small>
+                </div>
+
+                <div class="ad-card">
+                    <div class="img" style="background: #f8f9fa; height: 200px; display: flex; align-items: center; justify-content: center; border-radius: 10px; margin-bottom: 15px; color: #7f8c8d;">
+                        <i class="fas fa-video fa-3x"></i><br>Meta - BYD Song Pro
+                    </div>
+                    <h5>BYD Song Pro - O Futuro é Híbrido</h5>
+                    <p>"SUV Híbrido Plug-in com 70km de autonomia elétrica. Tecnologia chinesa, preço R$ 189.800. Teste drive hoje!"</p>
+                    <small>Segmentação: Adultos 30-50, interesse em tecnologia</small>
+                </div>
+
+                <div class="ad-card">
+                    <div class="img" style="background: #f8f9fa; height: 200px; display: flex; align-items: center; justify-content: center; border-radius: 10px; margin-bottom: 15px; color: #7f8c8d;">
+                        <i class="fas fa-mobile-alt fa-3x"></i><br>Meta - BYD Dolphin
+                    </div>
+                    <h5>BYD Dolphin - Revolução Elétrica</h5>
+                    <p>"100% Elétrico por R$ 149.800. Carregamento rápido, design moderno e 8 anos de garantia na bateria"</p>
+                    <small>Segmentação: Jovens adultos 25-40, eco-friendly</small>
+                </div>
+            </div>
+        </div>
+
+        <!-- ABA 2: ANÁLISE RECLAME AQUI -->
+        <div id="complaints-analysis" class="tab-content">
+            <div class="insights-box">
+                <h3><i class="fas fa-exclamation-triangle"></i> Principais Fraquezas dos Concorrentes</h3>
+                <p>BYD enfrenta problemas com <strong>rede de assistência técnica</strong> e <strong>peças de reposição</strong>. Oportunidade para Jeep destacar sua <strong>rede consolidada nacional</strong> e <strong>tradição em pós-venda</strong>.</p>
+            </div>
+
+            <div class="cards-grid">
+                <div class="card">
+                    <h3><i class="fas fa-star" style="color: var(--primary-green);"></i> Jeep Renegade</h3>
+                    <div class="metric">
+                        <span class="metric-label">Nota Reclame Aqui</span>
+                        <span class="metric-value good">7.2/10</span>
+                    </div>
+                    <div class="metric">
+                        <span class="metric-label">Reclamações Principais</span>
+                        <span class="metric-value average">Consumo Alto</span>
+                    </div>
+                    <div class="metric">
+                        <span class="metric-label">Tempo Resposta</span>
+                        <span class="metric-value excellent">2.1 dias</span>
+                    </div>
+                </div>
+
+                <div class="card competitor-1">
+                    <h3><i class="fas fa-exclamation-circle" style="color: var(--competitor-red);"></i> BYD Song Pro</h3>
+                    <div class="metric">
+                        <span class="metric-label">Nota Reclame Aqui</span>
+                        <span class="metric-value average">6.8/10</span>
+                    </div>
+                    <div class="metric">
+                        <span class="metric-label">Reclamações Principais</span>
+                        <span class="metric-value poor">Assistência Técnica</span>
+                    </div>
+                    <div class="metric">
+                        <span class="metric-label">Tempo Resposta</span>
+                        <span class="metric-value poor">4.2 dias</span>
+                    </div>
+                </div>
+
+                <div class="card competitor-2">
+                    <h3><i class="fas fa-exclamation-circle" style="color: var(--competitor-blue);"></i> BYD Dolphin</h3>
+                    <div class="metric">
+                        <span class="metric-label">Nota Reclame Aqui</span>
+                        <span class="metric-value average">6.5/10</span>
+                    </div>
+                    <div class="metric">
+                        <span class="metric-label">Reclamações Principais</span>
+                        <span class="metric-value poor">Peças Reposição</span>
+                    </div>
+                    <div class="metric">
+                        <span class="metric-label">Tempo Resposta</span>
+                        <span class="metric-value average">3.8 dias</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="complaints-list">
+                <h3>Top 10 Reclamações BYD (Pontos Fracos a Explorar)</h3>
+                
+                <div class="complaint-item">
+                    <h5>1. Rede de Assistência Técnica Limitada</h5>
+                    <p>"Apenas 12 concessionárias no Brasil vs 240+ da Jeep. Dificuldade para manutenção em cidades menores."</p>
+                </div>
+
+                <div class="complaint-item">
+                    <h5>2. Demora na Entrega de Peças</h5>
+                    <p>"Peças vindas da China demoram 45-60 dias. Veículo fica parado por tempo excessivo."</p>
+                </div>
+
+                <div class="complaint-item">
+                    <h5>3. Custo Alto de Manutenção Especializada</h5>
+                    <p>"Mão de obra especializada em híbridos/elétricos custa 40% mais que combustão."</p>
+                </div>
+
+                <div class="complaint-item">
+                    <h5>4. Problemas de Software</h5>
+                    <p>"Atualizações OTA falham, sistema multimídia trava frequentemente."</p>
+                </div>
+
+                <div class="complaint-item">
+                    <h5>5. Autonomia Real vs Anunciada</h5>
+                    <p>"Autonomia elétrica 20% menor que especificada em condições reais de uso."</p>
+                </div>
+            </div>
+
+            <div class="insights-box" style="margin-top: 30px;">
+                <h3><i class="fas fa-trophy"></i> Vantagens Competitivas do Jeep</h3>
+                <ul style="list-style: none; padding-left: 20px;">
+                    <li style="margin-bottom: 10px;"><i class="fas fa-check" style="color: #2ecc71; margin-right: 10px;"></i> Rede nacional consolidada com 240+ concessionárias</li>
+                    <li style="margin-bottom: 10px;"><i class="fas fa-check" style="color: #2ecc71; margin-right: 10px;"></i> Peças disponíveis em estoque nacional</li>
+                    <li style="margin-bottom: 10px;"><i class="fas fa-check" style="color: #2ecc71; margin-right: 10px;"></i> Mecânicos treinados em todo território nacional</li>
+                    <li style="margin-bottom: 10px;"><i class="fas fa-check" style="color: #2ecc71; margin-right: 10px;"></i> Tradição de 80+ anos no mercado</li>
+                    <li style="margin-bottom: 10px;"><i class="fas fa-check" style="color: #2ecc71; margin-right: 10px;"></i> Valor de revenda superior (52% em 3 anos vs 35% BYD)</li>
+                </ul>
+            </div>
+        </div>
+
+        <!-- ABA 3: ANÁLISE SWOT -->
+        <div id="swot-analysis" class="tab-content">
+            <div class="insights-box">
+                <h3><i class="fas fa-crosshairs"></i> Análise Estratégica SWOT</h3>
+                <p>Jeep possui vantagem em <strong>tradição e rede</strong>, mas precisa acelerar <strong>inovação tecnológica</strong> para competir com a narrativa de futuro da BYD.</p>
+            </div>
+
+            <div class="swot-matrix">
+                <div class="swot-quadrant strengths">
+                    <h4><i class="fas fa-plus-circle"></i> FORÇAS</h4>
+                    <ul>
+                        <li>Marca consolidada há 80+ anos</li>
+                        <li>Rede nacional de 240+ concessionárias</li>
+                        <li>Alto valor de revenda (52% em 3 anos)</li>
+                        <li>DNA aventureiro único no mercado</li>
+                        <li>Motor 1.3 Turbo comprovado</li>
+                        <li>Tração 4x4 real para off-road</li>
+                        <li>Base de clientes fidelizada</li>
+                    </ul>
+                </div>
+
+                <div class="swot-quadrant weaknesses">
+                    <h4><i class="fas fa-minus-circle"></i> FRAQUEZAS</h4>
+                    <ul>
+                        <li>Consumo elevado (9,8 km/l cidade)</li>
+                        <li>Falta de versão híbrida/elétrica</li>
+                        <li>Tecnologia embarcada limitada</li>
+                        <li>Preço elevado vs concorrentes</li>
+                        <li>Emissões CO2 altas</li>
+                        <li>Interior com materiais básicos</li>
+                        <li>Central multimídia desatualizada</li>
+                    </ul>
+                </div>
+
+                <div class="swot-quadrant opportunities">
+                    <h4><i class="fas fa-lightbulb"></i> OPORTUNIDADES</h4>
+                    <ul>
+                        <li>Mercado de SUVs crescendo 15%/ano</li>
+                        <li>Problemas de pós-venda da BYD</li>
+                        <li>Demanda por veículos "conectados"</li>
+                        <li>Parcerias tecnológicas (Stellantis)</li>
+                        <li>Versão híbrida em desenvolvimento</li>
+                        <li>Programa de fidelidade digital</li>
+                        <li>Explorar patriotismo vs "invasão chinesa"</li>
+                    </ul>
+                </div>
+
+                <div class="swot-quadrant threats">
+                    <h4><i class="fas fa-exclamation-triangle"></i> AMEAÇAS</h4>
+                    <ul>
+                        <li>BYD investindo R$ 3B+ em fábrica BR</li>
+                        <li>Preços BYD 20% menores</li>
+                        <li>Tecnologia chinesa avançada</li>
+                        <li>Transição para eletrificação</li>
+                        <li>Regulamentação ambiental mais rígida</li>
+                        <li>Outros chineses entrando (Chery, GWM)</li>
+                        <li>Mudança preferência consumidor</li>
+                        <li>Crise econômica reduzindo compras</li>
+                    </ul>
+                </div>
+            </div>
+
+            <div class="insights-box" style="margin-top: 30px;">
+                <h3><i class="fas fa-chess"></i> Estratégias Recomendadas 2025</h3>
+                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 20px; margin-top: 20px;">
+                    
+                    <div style="background: rgba(46, 204, 113, 0.1); padding: 15px; border-radius: 10px; border-left: 4px solid #2ecc71;">
+                        <h5 style="color: #2ecc71; margin-bottom: 10px;"><i class="fas fa-rocket"></i> ESTRATÉGIA FO (Forças + Oportunidades)</h5>
+                        <ul style="list-style: none; padding-left: 0;">
+                            <li>• Lançar Renegade Híbrido até Q3/2025</li>
+                            <li>• Campanha "Tradição + Inovação"</li>
+                            <li>• Explorar problemas pós-venda BYD</li>
+                            <li>• App exclusivo Jeep conectado</li>
+                        </ul>
+                    </div>
+
+                    <div style="background: rgba(231, 76, 60, 0.1); padding: 15px; border-radius: 10px; border-left: 4px solid #e74c3c;">
+                        <h5 style="color: #e74c3c; margin-bottom: 10px;"><i class="fas fa-shield-alt"></i> ESTRATÉGIA FA (Forças + Ameaças)</h5>
+                        <ul style="list-style: none; padding-left: 0;">
+                            <li>• Guerra de preços controlada</li>
+                            <li>• Destacar "Made in Brazil"</li>
+                            <li>• Parcerias com fintechs para crédito</li>
+                            <li>• Programa trade-in agressivo</li>
+                        </ul>
+                    </div>
+
+                    <div style="background: rgba(52, 152, 219, 0.1); padding: 15px; border-radius: 10px; border-left: 4px solid #3498db;">
+                        <h5 style="color: #3498db; margin-bottom: 10px;"><i class="fas fa-tools"></i> ESTRATÉGIA DO (Fraquezas + Oportunidades)</h5>
+                        <ul style="list-style: none; padding-left: 0;">
+                            <li>• Investir R$ 500M em P&D eletrificação</li>
+                            <li>• Renovar interior completamente</li>
+                            <li>• Sistema multimídia Android Auto nativo</li>
+                            <li>• Programa eficiência energética</li>
+                        </ul>
+                    </div>
+
+                    <div style="background: rgba(243, 156, 18, 0.1); padding: 15px; border-radius: 10px; border-left: 4px solid #f39c12;">
+                        <h5 style="color: #f39c12; margin-bottom: 10px;"><i class="fas fa-exclamation-triangle"></i> ESTRATÉGIA DA (Fraquezas + Ameaças)</h5>
+                        <ul style="list-style: none; padding-left: 0;">
+                            <li>• Versão básica mais barata (R$ 99k)</li>
+                            <li>• Parcerias com startups tech brasileiras</li>
+                            <li>• Programa sustentabilidade agressivo</li>
+                            <li>• Lobby regulatório pró-nacional</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+
+            <div style="background: rgba(155, 89, 182, 0.1); padding: 25px; border-radius: 15px; margin-top: 30px;">
+                <h3 style="color: #9b59b6; margin-bottom: 15px;"><i class="fas fa-calendar-alt"></i> Roadmap Prioritário 2025</h3>
+                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px;">
+                    <div style="text-align: center;">
+                        <div style="background: #e74c3c; color: white; padding: 10px; border-radius: 50%; width: 50px; height: 50px; margin: 0 auto 10px; display: flex; align-items: center; justify-content: center; font-weight: bold;">Q1</div>
+                        <h5>URGENTE</h5>
+                        <p>Campanha anti-BYD<br>App conectado<br>Promoções agressivas</p>
+                    </div>
+                    <div style="text-align: center;">
+                        <div style="background: #f39c12; color: white; padding: 10px; border-radius: 50%; width: 50px; height: 50px; margin: 0 auto 10px; display: flex; align-items: center; justify-content: center; font-weight: bold;">Q2</div>
+                        <h5>ALTA</h5>
+                        <p>Renovação interior<br>Sistema multimídia<br>Versão básica R$ 99k</p>
+                    </div>
+                    <div style="text-align: center;">
+                        <div style="background: #3498db; color: white; padding: 10px; border-radius: 50%; width: 50px; height: 50px; margin: 0 auto 10px; display: flex; align-items: center; justify-content: center; font-weight: bold;">Q3</div>
+                        <h5>MÉDIA</h5>
+                        <p>Renegade Híbrido<br>Parceria tech<br>Trade-in program</p>
+                    </div>
+                    <div style="text-align: center;">
+                        <div style="background: #2ecc71; color: white; padding: 10px; border-radius: 50%; width: 50px; height: 50px; margin: 0 auto 10px; display: flex; align-items: center; justify-content: center; font-weight: bold;">Q4</div>
+                        <h5>BAIXA</h5>
+                        <p>Expansão digital<br>Novos mercados<br>Parcerias sustentabilidade</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ABA 4: ANÁLISE 5W2H -->
+        <div id="w5-analysis" class="tab-content">
+            <div class="insights-box">
+                <h3><i class="fas fa-question-circle"></i> Plano de Ação Estratégico 5W2H</h3>
+                <p>Estrutura completa para <strong>execução das estratégias anti-BYD</strong> com responsabilidades, prazos e orçamentos definidos para 2025.</p>
+            </div>
+
+            <div class="w5-matrix">
+                <div class="w5-card what">
+                    <h4><i class="fas fa-bullseye"></i> O QUÊ? (WHAT)</h4>
+                    <ul style="list-style: none; padding-left: 0;">
+                        <li><strong>Objetivo Principal:</strong></li>
+                        <li>• Recuperar liderança SUV nacional</li>
+                        <li>• Aumentar market share de 18% para 25%</li>
+                        <li>• Neutralizar avanço BYD</li>
+                        <li><br><strong>Ações Específicas:</strong></li>
+                        <li>• Lançar Renegade Híbrido</li>
+                        <li>• Renovar interior completamente</li>
+                        <li>• Campanha "Tradição + Inovação"</li>
+                        <li>• App Jeep conectado</li>
+                        <li>• Programa trade-in agressivo</li>
+                    </ul>
+                </div>
+
+                <div class="w5-card why">
+                    <h4><i class="fas fa-heart"></i> POR QUÊ? (WHY)</h4>
+                    <ul style="list-style: none; padding-left: 0;">
+                        <li><strong>Justificativas:</strong></li>
+                        <li>• BYD cresceu 340% em 2024</li>
+                        <li>• Jeep perdeu 12% market share</li>
+                        <li>• Consumidores buscam tecnologia</li>
+                        <li>• Sustentabilidade é tendência</li>
+                        <li><br><strong>Riscos de Não Agir:</strong></li>
+                        <li>• Perder posição de líder</li>
+                        <li>• Marca vista como "ultrapassada"</li>
+                        <li>• Redução significativa de vendas</li>
+                        <li>• Entrada de mais chineses</li>
+                    </ul>
+                </div>
+
+                <div class="w5-card who">
+                    <h4><i class="fas fa-users"></i> QUEM? (WHO)</h4>
+                    <ul style="list-style: none; padding-left: 0;">
+                        <li><strong>Responsáveis:</strong></li>
+                        <li>• <strong>CEO Stellantis Brasil:</strong> Liderança geral</li>
+                        <li>• <strong>Dir. Marketing:</strong> Campanhas</li>
+                        <li>• <strong>Dir. Produto:</strong> Desenvolvimento</li>
+                        <li>• <strong>Dir. Vendas:</strong> Distribuição</li>
+                        <li><br><strong>Stakeholders:</strong></li>
+                        <li>• Concessionárias (240+ pontos)</li>
+                        <li>• Clientes atuais (500k base)</li>
+                        <li>• Prospects (25-45 anos, classe A/B)</li>
+                        <li>• Imprensa especializada</li>
+                    </ul>
+                </div>
+
+                <div class="w5-card where">
+                    <h4><i class="fas fa-map-marker-alt"></i> ONDE? (WHERE)</h4>
+                    <ul style="list-style: none; padding-left: 0;">
+                        <li><strong>Mercados Prioritários:</strong></li>
+                        <li>• <strong>SP/RJ/MG:</strong> 65% do mercado SUV</li>
+                        <li>• <strong>Capitais NE:</strong> Crescimento 25%/ano</li>
+                        <li>• <strong>Interior SP/PR:</strong> Agronegócio forte</li>
+                        <li><br><strong>Canais:</strong></li>
+                        <li>• Concessionárias físicas</li>
+                        <li>• E-commerce jeep.com.br</li>
+                        <li>• Mídias digitais</li>
+                        <li>• Eventos e test-drives</li>
+                        <li>• Shopping centers</li>
+                    </ul>
+                </div>
+
+                <div class="w5-card how">
+                    <h4><i class="fas fa-cogs"></i> COMO? (HOW)</h4>
+                    <ul style="list-style: none; padding-left: 0;">
+                        <li><strong>Metodologia:</strong></li>
+                        <li>• <strong>Fase 1:</strong> Defensiva (Q1-Q2)</li>
+                        <li>  - Campanhas comparativas</li>
+                        <li>  - Promoções agressivas</li>
+                        <li>  - Melhorias rápidas produto</li>
+                        <li>• <strong>Fase 2:</strong> Ofensiva (Q3-Q4)</li>
+                        <li>  - Lançamento híbrido</li>
+                        <li>  - Renovação completa</li>
+                        <li>  - Expansão digital</li>
+                        <li><br><strong>KPIs:</strong></li>
+                        <li>• Market share mensal</li>
+                        <li>• NPS vs concorrentes</li>
+                        <li>• Share of voice digital</li>
+                    </ul>
+                </div>
+
+                <div class="w5-card how-much">
+                    <h4><i class="fas fa-dollar-sign"></i> QUANTO? (HOW MUCH)</h4>
+                    <ul style="list-style: none; padding-left: 0;">
+                        <li><strong>Investimento Total 2025:</strong></li>
+                        <li><strong style="font-size: 1.2em; color: #f1c40f;">R$ 2.8 BILHÕES</strong></li>
+                        <li><br><strong>Detalhamento:</strong></li>
+                        <li>• <strong>P&D Híbrido:</strong> R$ 1.2B (43%)</li>
+                        <li>• <strong>Marketing:</strong> R$ 800M (29%)</li>
+                        <li>• <strong>Renovação Produto:</strong> R$ 400M (14%)</li>
+                        <li>• <strong>Digital/Tech:</strong> R$ 250M (9%)</li>
+                        <li>• <strong>Rede/Treinamento:</strong> R$ 150M (5%)</li>
+                        <li><br><strong>ROI Esperado:</strong></li>
+                        <li>• Break-even: 18 meses</li>
+                        <li>• ROI 24 meses: 180%</li>
+                    </ul>
+                </div>
+            </div>
+
+            <div style="background: linear-gradient(135deg, #2c3e50, #34495e); color: white; padding: 25px; border-radius: 15px; margin-top: 30px;">
+                <h3 style="margin-bottom: 20px;"><i class="fas fa-calendar-check"></i> Cronograma Executivo 2025</h3>
+                
+                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 20px;">
+                    <div style="background: rgba(231, 76, 60, 0.2); padding: 15px; border-radius: 10px;">
+                        <h5 style="color: #e74c3c; margin-bottom: 10px;">🚨 JAN-MAR (EMERGENCIAL)</h5>
+                        <ul style="list-style: none; padding-left: 0; font-size: 0.9em;">
+                            <li>✓ Campanha comparativa vs BYD</li>
+                            <li>✓ Desconto R$ 15k + trade-in</li>
+                            <li>✓ App Jeep Connect beta</li>
+                            <li>✓ Renovação interior início</li>
+                            <li><strong>Orçamento: R$ 400M</strong></li>
+                        </ul>
+                    </div>
+
+                    <div style="background: rgba(243, 156, 18, 0.2); padding: 15px; border-radius: 10px;">
+                        <h5 style="color: #f39c12; margin-bottom: 10px;">⚡ ABR-JUN (ACELERAÇÃO)</h5>
+                        <ul style="list-style: none; padding-left: 0; font-size: 0.9em;">
+                            <li>🔄 Sistema multimídia novo</li>
+                            <li>🔄 Versão S R$ 99.990</li>
+                            <li>🔄 Programa fidelidade</li>
+                            <li>🔄 Parceria Stellantis Tech</li>
+                            <li><strong>Orçamento: R$ 600M</strong></li>
+                        </ul>
+                    </div>
+
+                    <div style="background: rgba(52, 152, 219, 0.2); padding: 15px; border-radius: 10px;">
+                        <h5 style="color: #3498db; margin-bottom: 10px;">🚀 JUL-SET (LANÇAMENTO)</h5>
+                        <ul style="list-style: none; padding-left: 0; font-size: 0.9em;">
+                            <li>🆕 Renegade Híbrido lançamento</li>
+                            <li>🆕 Evento nacional 27 cidades</li>
+                            <li>🆕 Campanha "Futuro Jeep"</li>
+                            <li>🆕 Parceria Magazine Luiza</li>
+                            <li><strong>Orçamento: R$ 1.2B</strong></li>
+                        </ul>
+                    </div>
+
+                    <div style="background: rgba(46, 204, 113, 0.2); padding: 15px; border-radius: 10px;">
+                        <h5 style="color: #2ecc71; margin-bottom: 10px;">🏆 OUT-DEZ (CONSOLIDAÇÃO)</h5>
+                        <ul style="list-style: none; padding-left: 0; font-size: 0.9em;">
+                            <li>📊 Análise resultados</li>
+                            <li>📊 Otimização campanhas</li>
+                            <li>📊 Expansão bem-sucedidas</li>
+                            <li>📊 Planejamento 2026</li>
+                            <li><strong>Orçamento: R$ 600M</strong></li>
+                        </ul>
+                    </div>
+                </div>
+
+                <div style="margin-top: 25px; text-align: center; background: rgba(255, 255, 255, 0.1); padding: 15px; border-radius: 10px;">
+                    <h4>🎯 META 2025: RECUPERAR LIDERANÇA SUV</h4>
+                    <p style="font-size: 1.1em; margin: 10px 0;">De <strong>18% → 25%</strong> market share | <strong>+38%</strong> vendas | <strong>ROI 180%</strong></p>
+                    <div style="display: flex; justify-content: center; gap: 30px; margin-top: 15px;">
+                        <div><strong>Vendas 2024:</strong><br>42.000 unidades</div>
+                        <div><strong>Meta 2025:</strong><br>58.000 unidades</div>
+                        <div><strong>Crescimento:</strong><br>+16.000 unidades</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function openTab(evt, tabName) {
+            var i, tabcontent, tablinks;
+            
+            // Hide all tab contents
+            tabcontent = document.getElementsByClassName("tab-content");
+            for (i = 0; i < tabcontent.length; i++) {
+                tabcontent[i].classList.remove("active");
+            }
+            
+            // Remove active class from all tab buttons
+            tablinks = document.getElementsByClassName("tab-btn");
+            for (i = 0; i < tablinks.length; i++) {
+                tablinks[i].classList.remove("active");
+            }
+            
+            // Show the selected tab content and mark button as active
+            document.getElementById(tabName).classList.add("active");
+            evt.currentTarget.classList.add("active");
+
+            // Restart progress bar animations
+            setTimeout(function() {
+                const progressBars = document.querySelectorAll('.progress-fill');
+                progressBars.forEach(bar => {
+                    const width = bar.style.width;
+                    bar.style.width = '0%';
+                    setTimeout(() => {
+                        bar.style.width = width;
+                    }, 100);
+                });
+            }, 100);
+        }
+
+        // Initialize progress bars on page load
+        document.addEventListener('DOMContentLoaded', function() {
+            const progressBars = document.querySelectorAll('.progress-fill');
+            progressBars.forEach((bar, index) => {
+                setTimeout(() => {
+                    const width = bar.style.width;
+                    bar.style.width = '0%';
+                    setTimeout(() => {
+                        bar.style.width = width;
+                    }, 100);
+                }, index * 200);
+            });
+        });
+
+        // Add hover effects to cards
+        document.querySelectorAll('.card').forEach(card => {
+            card.addEventListener('mouseenter', function() {
+                this.style.transform = 'translateY(-8px) scale(1.02)';
+            });
+            
+            card.addEventListener('mouseleave', function() {
+                this.style.transform = 'translateY(0) scale(1)';
+            });
+        });
+
+        // Smooth scrolling for mobile
+        if (window.innerWidth <= 768) {
+            document.querySelectorAll('.tab-btn').forEach(btn => {
+                btn.addEventListener('click', function() {
+                    setTimeout(() => {
+                        document.querySelector('.container').scrollIntoView({ 
+                            behavior: 'smooth',
+                            block: 'start'
+                        });
+                    }, 100);
+                });
+            });
+        }
+    </script>
+</body>
+</html>
